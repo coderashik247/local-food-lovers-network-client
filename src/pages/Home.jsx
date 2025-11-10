@@ -2,6 +2,7 @@ import React from 'react';
 import Navbar from '../components/header/Navbar';
 import Slider from '../components/header/Slider';
 import ServiceCard from '../components/ServiceCard/ServiceCard';
+import TestimonialCard from '../components/TestimonialCard/TestimonialCard';
 
 const Home = () => {
     return (<>
@@ -10,6 +11,7 @@ const Home = () => {
       </div>
       <Slider></Slider>
       <ServiceCard></ServiceCard>
+      <TestimonialCard></TestimonialCard>
       </>
     );
 };
