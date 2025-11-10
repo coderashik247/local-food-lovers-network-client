@@ -1,13 +1,11 @@
 import Footer from "../components/Footer/Footer";
-import Navbar from "../components/header/Navbar";
 import { Outlet } from "react-router";
+import Home from "../pages/Home";
 
 const MainLayouts = () => {
   return (
     <>
-      <div className="bg-[#a9ba2818]">
-        <Navbar></Navbar>
-      </div>
+      <Home></Home>
       <Outlet></Outlet>
       <Footer></Footer>
     </>
