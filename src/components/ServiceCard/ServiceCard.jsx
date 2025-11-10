@@ -24,7 +24,7 @@ const ServiceCard = () => {
 
   const cards = [
     {
-      title: "Featured Reviews",
+      title: "Most Loved Dishes",
       img: food1,
       description:
         "Discover the top-rated food reviews shared by our community. Each review includes the dish, restaurant, location, reviewer, and rating.",
