@@ -3,7 +3,7 @@ import MainLayouts from "../layouts/MainLayouts";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import CardDetails from "../components/CardDetails/CardDetails";
-import AllReviewsCard from "../components/ReviewsContainer/ReviewCard/AllReviewsCard";
+import AllReviewsCard from "../components/ReviewsContainer/ReviewCard/AllRecipesCard";
 import AddRecipe from "../components/AddElements/addrecipes/AddRecipes";
 
 export const router = createBrowserRouter([

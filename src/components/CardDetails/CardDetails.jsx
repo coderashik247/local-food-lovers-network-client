@@ -1,80 +1,120 @@
 import React, { useEffect, useState } from "react";
-import useAxios from "../../hooks/useAxios";
 import { useParams, useNavigate } from "react-router-dom";
-import Footer from "../Footer/Footer";
 import Navbar from "../header/Navbar";
-import { IoArrowBack } from "react-icons/io5";
+import RecipeInfo from "./RecipeInfo";
+import ReviewList from "./ReviewList";
+import AddReviewButton from "./AddReviewButton";
+import AddReviewModal from "./AddReviewModal";
+import useAuth from "../../hooks/useAuth";
+import useAxios from "../../hooks/useAxios";
 import CardDetailsSkeleton from "../Sekeletion/CardDetailsSkeleton";
+import { IoArrowBack } from "react-icons/io5";
 
 const CardDetails = () => {
-  const axiosInstance = useAxios();
+  const axios = useAxios();
   const { productId } = useParams();
   const navigate = useNavigate();
-  const [reviewData, setReviewData] = useState(null);
+  const { user } = useAuth();
+
+  // ---------- State ----------
+  const [recipe, setRecipe] = useState(null);
+  const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newRating, setNewRating] = useState("");
-  const [newReviewText, setNewReviewText] = useState("");
-  const [submitError, setSubmitError] = useState("");
 
+  // Add modal
+  const [addModal, setAddModal] = useState(false);
+  const [newRating, setNewRating] = useState("");
+  const [newText, setNewText] = useState("");
+  const [addErr, setAddErr] = useState("");
+  const [adding, setAdding] = useState(false);
+
+  // ---------- Fetch recipe ----------
   useEffect(() => {
-    const fetchReview = async () => {
+    const fetchRecipe = async () => {
       try {
         setLoading(true);
-        const response = await axiosInstance.get(`/reviews/${productId}`);
-        setReviewData(response.data);
-      } catch (err) {
-        console.error(err);
-        setError("Failed to fetch review data!");
+        const { data } = await axios.get("/recipes");
+        const found = data.find((r) => r._id === productId);
+        if (found) setRecipe(found);
+        else setError("Recipe not found!");
+      } catch (e) {
+        console.error(e);
+        setError("Failed to load recipe");
       } finally {
         setLoading(false);
       }
     };
-    fetchReview();
-  }, [axiosInstance, productId]);
+    fetchRecipe();
+  }, [axios, productId]);
 
-  const handleSubmitReview = async () => {
-    if (!newRating || !newReviewText) {
-      setSubmitError("Both fields are required!");
-      return;
-    }
-
+  // ---------- Fetch reviews ----------
+  const fetchReviews = async () => {
     try {
-      await axiosInstance.post(`/reviews/${productId}`, {
-        rating: newRating,
-        reviewText: newReviewText,
-      });
-      // Refetch updated review
-      const response = await axiosInstance.get(`/reviews/${productId}`);
-      setReviewData(response.data);
-      setIsModalOpen(false);
-      setNewRating("");
-      setNewReviewText("");
-      setSubmitError("");
-    } catch (err) {
-      console.error(err);
-      setSubmitError("Failed to submit review!");
+      const { data } = await axios.get(`/reviews?recipeId=${productId}`);
+      setReviews(data);
+    } catch (e) {
+      console.error(e);
     }
   };
 
+  useEffect(() => {
+    if (productId) fetchReviews();
+  }, [productId]);
+
+  // ---------- Add review ----------
+  const handleAdd = async () => {
+    if (!newRating || !newText) return setAddErr("Both fields required");
+    setAdding(true);
+    try {
+      await axios.post("/reviews", {
+        recipe_id: productId,
+        email: user?.email,
+        name: user?.displayName,
+        photo: user?.photoURL,
+        rating: Number(newRating),
+        review_text: newText,
+      });
+      await fetchReviews();
+      setAddModal(false);
+      setNewRating("");
+      setNewText("");
+      setAddErr("");
+    } catch (e) {
+      console.log(e);
+      setAddErr("Failed to add review");
+    } finally {
+      setAdding(false);
+    }
+  };
+
+  // ---------- Update review ----------
+  const handleUpdate = async (reviewId, payload) => {
+    await axios.patch(`/reviews/${reviewId}`, payload);
+    await fetchReviews();
+  };
+
+  // ---------- Delete review ----------
+  const handleDelete = async (reviewId) => {
+    if (!window.confirm("Delete this review?")) return;
+    await axios.delete(`/reviews/${reviewId}`);
+    await fetchReviews();
+  };
+
+  // ---------- Render ----------
   if (loading) return <CardDetailsSkeleton />;
   if (error)
     return (
       <p className="text-center mt-10 text-red-500 font-medium">{error}</p>
     );
-  if (!reviewData)
-    return (
-      <p className="text-center mt-10 text-gray-600 font-medium">
-        No review found.
-      </p>
-    );
+  if (!recipe)
+    return <p className="text-center mt-10 text-gray-600">No recipe found.</p>;
 
   return (
     <>
       <Navbar />
       <div className="container mx-auto px-4 md:px-8 py-12">
-        {/* Back Button */}
+        {/* Back */}
         <button
           onClick={() => navigate(-1)}
           className="flex items-center gap-2 mb-6 text-green-800 font-semibold hover:text-green-600"
@@ -82,124 +122,55 @@ const CardDetails = () => {
           <IoArrowBack size={20} /> Go Back
         </button>
 
+        {/* Layout */}
         <div className="md:flex md:items-start md:gap-10">
           {/* Image */}
           <div className="md:w-2/5 w-full rounded-2xl overflow-hidden shadow-lg border border-gray-100">
             <img
-              src={reviewData.photo}
-              alt={reviewData.foodName}
+              src={recipe.photo}
+              alt={recipe.foodName}
               className="w-full h-96 object-cover transform hover:scale-105 transition-transform duration-500"
             />
           </div>
 
           {/* Details */}
           <div className="md:w-3/5 mt-6 md:mt-0 space-y-6">
-            {/* Reviewer Info */}
-            <div className="bg-white shadow-md rounded-xl p-6 flex justify-between items-center flex-wrap gap-4 border border-gray-100">
-              <div className="flex items-center gap-4">
-                <img
-                  src={reviewData.photo}
-                  alt={reviewData.reviewer_name}
-                  className="w-14 h-14 rounded-full object-cover border-2 border-green-700"
-                />
-                <div>
-                  <h2 className="text-lg font-semibold text-gray-800">
-                    {reviewData.reviewer_name}
-                  </h2>
-                  <p className="text-gray-500 text-sm">Donator</p>
-                </div>
-              </div>
-              <div>
-                <p className="text-gray-500 text-sm">Location</p>
-                <h3 className="text-gray-800 font-medium">
-                  {reviewData.restaurantLocation}
-                </h3>
-              </div>
-            </div>
+            <RecipeInfo recipe={recipe} />
 
-            {/* Food Info */}
-            <div className="bg-white shadow-md rounded-xl p-6 flex justify-between items-center flex-wrap gap-4 border border-gray-100">
-              <div>
-                <p className="text-gray-500 text-sm">Food Name</p>
-                <h3 className="text-gray-800 font-medium">
-                  {reviewData.foodName}
-                </h3>
-              </div>
-              <div>
-                <p className="text-gray-500 text-sm">Rating</p>
-                <h3 className="text-gray-800 font-medium">
-                  {reviewData.rating}
-                </h3>
-              </div>
-            </div>
-
-            {/* Review Text */}
-            <div className="bg-white shadow-md rounded-xl p-6 border border-gray-100">
-              <h3 className="text-gray-800 font-semibold mb-2">Review</h3>
-              <p className="text-gray-700 leading-relaxed">
-                {reviewData.reviewText}
-              </p>
-            </div>
+            {/* Reviews */}
+            <section>
+              <h3 className="text-2xl text-gray-800 font-semibold mb-4">
+                Reviews
+              </h3>
+              <ReviewList
+                reviews={reviews}
+                onUpdate={handleUpdate}
+                onDelete={handleDelete}
+                currentUserEmail={user?.email}
+                recipePhoto={recipe.photo}
+              />
+            </section>
           </div>
         </div>
+
+        {/* Add button */}
+        <AddReviewButton onClick={() => setAddModal(true)} />
       </div>
 
-      {/* Add Review Button */}
-      <div className="flex items-center justify-center mb-12">
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="bg-green-700 text-white px-4 py-2 rounded-md font-semibold hover:bg-green-600 transition"
-        >
-          Add Review
-        </button>
-      </div>
+      {/* Add modal */}
+      <AddReviewModal
+        isOpen={addModal}
+        onClose={() => setAddModal(false)}
+        rating={newRating}
+        setRating={setNewRating}
+        text={newText}
+        setText={setNewText}
+        onSubmit={handleAdd}
+        submitting={adding}
+        error={addErr}
+      />
 
-      {/* Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md relative shadow-lg">
-            <button
-              onClick={() => setIsModalOpen(false)}
-              className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 font-bold text-xl"
-            >
-              ×
-            </button>
-            <h2 className="text-lg font-semibold mb-4">Add Your Review</h2>
-            {submitError && <p className="text-red-500 mb-2">{submitError}</p>}
-            <div className="mb-4">
-              <label className="block text-gray-700 font-medium mb-1">
-                Rating
-              </label>
-              <input
-                type="number"
-                min="1"
-                max="5"
-                value={newRating}
-                onChange={(e) => setNewRating(e.target.value)}
-                className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-gray-700 font-medium mb-1">
-                Review
-              </label>
-              <textarea
-                value={newReviewText}
-                onChange={(e) => setNewReviewText(e.target.value)}
-                className="w-full border border-gray-300 rounded-md p-2 h-24 focus:outline-none focus:ring-2 focus:ring-green-500"
-              />
-            </div>
-            <button
-              onClick={handleSubmitReview}
-              className="bg-green-700 text-white px-4 py-2 rounded-md font-semibold hover:bg-green-600 transition w-full"
-            >
-              Submit
-            </button>
-          </div>
-        </div>
-      )}
-
-      <Footer />
+      <footer />
     </>
   );
 };
