@@ -3,10 +3,12 @@ import { useNavigate } from "react-router-dom";
 import useAxios from "../../../hooks/useAxios";
 import Navbar from "../../header/Navbar";
 import Footer from "../../Footer/Footer";
+import useAuth from "../../../hooks/useAuth";
 
 const AddReview = () => {
   const axiosInstance = useAxios();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [foodName, setFoodName] = useState("");
   const [photo, setPhoto] = useState("");
@@ -22,14 +24,21 @@ const AddReview = () => {
     setLoading(true);
     setError("");
 
+    const userEmail = user?.email;
+    const userName = user?.displayName;
+    const userPhoto = user?.photoURL;
+
     try {
-      await axiosInstance.post("/reviews", {
+      await axiosInstance.post("/recipes", {
         foodName,
         photo,
         restaurantName,
         restaurantLocation: location,
         rating: parseFloat(rating),
         reviewText,
+        reviewerEmail: userEmail,
+        reviewerName: userName,
+        reviewerPhoto: userPhoto,
       });
       navigate("/all-food");
     } catch (err) {
@@ -52,8 +61,6 @@ const AddReview = () => {
           {error && <p className="text-red-500 text-center mb-4">{error}</p>}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-
-            {/* Food Name */}
             <input
               type="text"
               placeholder="Food Name"
@@ -63,7 +70,6 @@ const AddReview = () => {
               required
             />
 
-            {/* Food Image */}
             <input
               type="text"
               placeholder="Food Image URL"
@@ -73,7 +79,6 @@ const AddReview = () => {
               required
             />
 
-            {/* Restaurant Name */}
             <input
               type="text"
               placeholder="Restaurant Name"
@@ -83,7 +88,6 @@ const AddReview = () => {
               required
             />
 
-            {/* Location */}
             <input
               type="text"
               placeholder="Location"
@@ -93,7 +97,6 @@ const AddReview = () => {
               required
             />
 
-            {/* Star Rating */}
             <input
               type="number"
               step="0.1"
@@ -106,7 +109,6 @@ const AddReview = () => {
               required
             />
 
-            {/* Review Text */}
             <textarea
               placeholder="Review Text"
               value={reviewText}
@@ -116,7 +118,6 @@ const AddReview = () => {
               required
             />
 
-            {/* Submit Button */}
             <button
               type="submit"
               disabled={loading}
