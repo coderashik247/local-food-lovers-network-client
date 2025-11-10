@@ -36,9 +36,9 @@ const Navbar = () => {
               ? "text-bold text-lg border-b-2 px-3 text-[#a9ba28]"
               : "text-bold text-lg  px-3"
           }
-          to="/reviews"
+          to="/all-food"
         >
-          All Reviews
+          All Food
         </NavLink>
       </li>
       <li>
@@ -48,9 +48,9 @@ const Navbar = () => {
               ? "text-bold text-lg border-b-2 px-3 text-[#a9ba28]"
               : "text-bold text-lg  px-3"
           }
-          to="/login"
+          to="/add-recipes"
         >
-          Login{" "}
+          Add Recipes
         </NavLink>
       </li>
     </>
@@ -120,12 +120,6 @@ const Navbar = () => {
                     className="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm"
                   >
                     <li>
-                      <a>Item 1</a>
-                    </li>
-                    <li>
-                      <a>Item 2</a>
-                    </li>
-                    <li>
                       <button
                         onClick={handleLogOut}
                         className="flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-white bg-[#a9ba28] rounded-md hover:bg-[#74801f] transition-all"
@@ -137,7 +131,7 @@ const Navbar = () => {
                 </div>
               </>
             ) : (
-              <Link className="btn" to="login">
+              <Link className="btn" to="/login">
                 Login
               </Link>
             )}

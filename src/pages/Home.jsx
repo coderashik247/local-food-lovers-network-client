@@ -1,22 +1,26 @@
-import React from 'react';
-import Navbar from '../components/header/Navbar';
-import Slider from '../components/header/Slider';
-import ServiceCard from '../components/ServiceCard/ServiceCard';
-import TestimonialCard from '../components/TestimonialCard/TestimonialCard';
-import ReviewCard from '../components/ReviewCard/ReviewCard';
-import Container from '../components/header/Container/Container';
+import React from "react";
+import Navbar from "../components/header/Navbar";
+import Slider from "../components/header/Slider";
+import ServiceCard from "../components/ServiceCard/ServiceCard";
+import TestimonialCard from "../components/TestimonialCard/TestimonialCard";
+import AllHomeReviewsCard from "../components/ReviewsContainer/HomeRewiewsCard/HomeRewiewsCard";
 
 const Home = () => {
-    return (<>
-        <div className="bg-[#a9ba2818]">
-        <Navbar></Navbar>
+  return (
+    <>
+      <div className="bg-[#a9ba2818]">
+        <Navbar />
       </div>
-      <Slider></Slider>
-      <ServiceCard></ServiceCard>
-      <Container><ReviewCard></ReviewCard></Container>
-      <TestimonialCard></TestimonialCard>
-      </>
-    );
+
+
+        <div className="space-y-10">
+          <Slider />
+          <ServiceCard />
+          <AllHomeReviewsCard />
+          <TestimonialCard />
+        </div>
+    </>
+  );
 };
 
 export default Home;

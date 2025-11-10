@@ -1,0 +1,135 @@
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import useAxios from "../../../hooks/useAxios";
+import Navbar from "../../header/Navbar";
+import Footer from "../../Footer/Footer";
+
+const AddReview = () => {
+  const axiosInstance = useAxios();
+  const navigate = useNavigate();
+
+  const [foodName, setFoodName] = useState("");
+  const [photo, setPhoto] = useState("");
+  const [restaurantName, setRestaurantName] = useState("");
+  const [location, setLocation] = useState("");
+  const [rating, setRating] = useState("");
+  const [reviewText, setReviewText] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    try {
+      await axiosInstance.post("/reviews", {
+        foodName,
+        photo,
+        restaurantName,
+        restaurantLocation: location,
+        rating: parseFloat(rating),
+        reviewText,
+      });
+      navigate("/all-food");
+    } catch (err) {
+      console.error(err);
+      setError("Failed to add review!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <>
+      <Navbar />
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center py-12 px-4">
+        <div className="w-full max-w-lg bg-white rounded-2xl shadow-lg p-8">
+          <h1 className="text-3xl font-bold text-center mb-6 text-gray-800">
+            Add New Food
+          </h1>
+
+          {error && <p className="text-red-500 text-center mb-4">{error}</p>}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+
+            {/* Food Name */}
+            <input
+              type="text"
+              placeholder="Food Name"
+              value={foodName}
+              onChange={(e) => setFoodName(e.target.value)}
+              className="w-full border border-gray-300 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500"
+              required
+            />
+
+            {/* Food Image */}
+            <input
+              type="text"
+              placeholder="Food Image URL"
+              value={photo}
+              onChange={(e) => setPhoto(e.target.value)}
+              className="w-full border border-gray-300 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500"
+              required
+            />
+
+            {/* Restaurant Name */}
+            <input
+              type="text"
+              placeholder="Restaurant Name"
+              value={restaurantName}
+              onChange={(e) => setRestaurantName(e.target.value)}
+              className="w-full border border-gray-300 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500"
+              required
+            />
+
+            {/* Location */}
+            <input
+              type="text"
+              placeholder="Location"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              className="w-full border border-gray-300 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500"
+              required
+            />
+
+            {/* Star Rating */}
+            <input
+              type="number"
+              step="0.1"
+              min="0"
+              max="5"
+              placeholder="Rating (0-5)"
+              value={rating}
+              onChange={(e) => setRating(e.target.value)}
+              className="w-full border border-gray-300 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500"
+              required
+            />
+
+            {/* Review Text */}
+            <textarea
+              placeholder="Review Text"
+              value={reviewText}
+              onChange={(e) => setReviewText(e.target.value)}
+              rows={4}
+              className="w-full border border-gray-300 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500"
+              required
+            />
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-500 transition-colors"
+            >
+              {loading ? "Adding..." : "Add Review"}
+            </button>
+          </form>
+        </div>
+      </div>
+      <Footer />
+    </>
+  );
+};
+
+export default AddReview;
