@@ -7,6 +7,7 @@ import AllReviewsCard from "../components/ReviewsContainer/AllReviewCard/AllReci
 import AddRecipe from "../components/AddElements/addrecipes/AddRecipes";
 import About from "../components/about/about";
 import Qna from "../components/QnaPage/Qna";
+import MyRecipes from "../components/ReviewsContainer/MyReviews/MyReviews";
 
 export const router = createBrowserRouter([
   {
@@ -19,6 +20,7 @@ export const router = createBrowserRouter([
   },
   { path: "/about", element: <About /> },
   { path: "/faq", element: <Qna /> },
+  { path: "/my-reviews", element: <MyRecipes /> },
   {
     path: "/register",
     element: <Register />,
