@@ -46,6 +46,7 @@ const CardDetails = () => {
   const isOwner = recipe?.reviewer_email === user?.email;
 
   // ---------- Fetch Recipe ----------
+
   useEffect(() => {
     const fetchRecipe = async () => {
       try {
@@ -72,6 +73,7 @@ const CardDetails = () => {
   }, [axios, productId]);
 
   // ---------- Fetch Reviews ----------
+
   const fetchReviews = async () => {
     try {
       const { data } = await axios.get(`/reviews?recipeId=${productId}`);
@@ -86,6 +88,7 @@ const CardDetails = () => {
   }, [productId]);
 
   // ---------- Check if user already liked ----------
+
   useEffect(() => {
     if (recipe && user?.email) {
       const hasLiked = recipe.likedBy?.includes(user.email);
@@ -94,6 +97,7 @@ const CardDetails = () => {
   }, [recipe, user]);
 
   // ---------- Add Review ----------
+
   const handleAdd = async () => {
     if (!newRating || !newText) return setAddErr("Both fields required");
     setAdding(true);
@@ -119,8 +123,9 @@ const CardDetails = () => {
   };
 
   // ---------- Toggle Like / Unlike ----------
+
   const handleLike = async () => {
-    if (!user || isOwner) return; // Prevent owner from liking their own recipe
+    if (!user || isOwner) return;
 
     try {
       const updatedLikes = liked ? recipe.likes - 1 : recipe.likes + 1;
@@ -129,7 +134,7 @@ const CardDetails = () => {
         likes: updatedLikes,
       });
 
-      setRecipe((prev) => ({ ...prev, likes: updatedLikes })); // <-- plural
+      setRecipe((prev) => ({ ...prev, likes: updatedLikes }));
       setLiked(!liked);
     } catch (e) {
       console.error("Failed to toggle like", e);
@@ -138,12 +143,14 @@ const CardDetails = () => {
   };
 
   // ---------- Update Review ----------
+
   const handleUpdate = async (reviewId, payload) => {
     await axios.patch(`/reviews/${reviewId}`, payload);
     await fetchReviews();
   };
 
   // ---------- Delete Review ----------
+
   const handleDelete = async (reviewId) => {
     if (!window.confirm("Delete this review?")) return;
     await axios.delete(`/reviews/${reviewId}`);
@@ -151,6 +158,7 @@ const CardDetails = () => {
   };
 
   // ---------- Update Recipe ----------
+
   const handleEditRecipe = async () => {
     if (!editName || !editLocation || !editPhoto) {
       return setEditError("All fields are required");
@@ -175,6 +183,7 @@ const CardDetails = () => {
   };
 
   // ---------- Delete Recipe ----------
+
   const handleDeleteRecipe = async () => {
     if (
       !window.confirm("Delete this entire recipe? All reviews will be removed.")
@@ -189,6 +198,7 @@ const CardDetails = () => {
   };
 
   // ---------- Render ----------
+  
   if (loading) return <CardDetailsSkeleton />;
   if (error)
     return (

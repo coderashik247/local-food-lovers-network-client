@@ -52,6 +52,30 @@ const Navbar = () => {
         >
           Add Recipes
         </NavLink>
+      </li>{" "}
+      <li>
+        <NavLink
+          className={({ isActive }) =>
+            isActive
+              ? "text-bold text-lg border-b-2 px-3 text-[#a9ba28]"
+              : "text-bold text-lg  px-3"
+          }
+          to="/about"
+        >
+          About
+        </NavLink>
+      </li>
+      <li>
+        <NavLink
+          className={({ isActive }) =>
+            isActive
+              ? "text-bold text-lg border-b-2 px-3 text-[#a9ba28]"
+              : "text-bold text-lg  px-3"
+          }
+          to="/faq"
+        >
+          FAQ
+        </NavLink>
       </li>
     </>
   );

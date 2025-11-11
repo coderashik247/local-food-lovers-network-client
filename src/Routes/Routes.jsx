@@ -3,8 +3,10 @@ import MainLayouts from "../layouts/MainLayouts";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import CardDetails from "../components/CardDetails/CardDetails";
-import AllReviewsCard from "../components/ReviewsContainer/ReviewCard/AllRecipesCard";
+import AllReviewsCard from "../components/ReviewsContainer/AllReviewCard/AllRecipesCard";
 import AddRecipe from "../components/AddElements/addrecipes/AddRecipes";
+import About from "../components/about/about";
+import Qna from "../components/QnaPage/Qna";
 
 export const router = createBrowserRouter([
   {
@@ -15,6 +17,8 @@ export const router = createBrowserRouter([
     path: "/login",
     element: <Login />,
   },
+  { path: "/about", element: <About /> },
+  { path: "/faq", element: <Qna /> },
   {
     path: "/register",
     element: <Register />,

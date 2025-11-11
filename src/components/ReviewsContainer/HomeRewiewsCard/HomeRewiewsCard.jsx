@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
 import useAxios from "../../../hooks/useAxios";
-
 import Card from "../../Card/Card";
+import { Link } from "react-router";
 
 const AllHomeReviewsCard = () => {
   const axiosInstance = useAxios();
   const [data, setData] = useState([]);
 
   useEffect(() => {
-    axiosInstance.get("/recipes?featured=true").then((data) => {
+    axiosInstance.get("all-recipes/like").then((data) => {
       setData(data.data);
     });
   }, [axiosInstance]);
@@ -17,22 +17,25 @@ const AllHomeReviewsCard = () => {
       <div className="text-center mb-3 mt-8">
         <h2 className="text-4xl font-bold text-gray-500">Featured recipes</h2>
         <p className="text-lg text-gray-400 mt-2">
-          See which local meals are winning hearts in our foodie community.Check out the best food experiences shared by our users.
+          See which local meals are winning hearts in our foodie community.Check
+          out the best food experiences shared by our users.
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {data.map((recipes) => 
-        {
-           return <Card key={recipes._id} recipes={recipes}></Card>
+        {data.map((recipes) => {
+          return <Card key={recipes._id} recipes={recipes}></Card>;
         })}
+      </div>
+      <div className="text-center">
+        <Link to="/all-food">
+          <button className="btn btn-outline btn-success mt-8 mx-auto block">
+            See All Recipes
+          </button>
+        </Link>
       </div>
     </div>
   );
 };
 
-export default AllHomeReviewsCard
-
-
-
-
+export default AllHomeReviewsCard;
