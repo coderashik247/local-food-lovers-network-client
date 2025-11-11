@@ -1,5 +1,11 @@
 import logo from "../../assets/logo.jpg";
 import Container from "../header/Container/Container";
+import {
+  FaFacebookF,
+  FaTwitter,
+  FaInstagram,
+  FaLinkedinIn,
+} from "react-icons/fa";
 
 const Footer = () => {
   return (
@@ -11,11 +17,47 @@ const Footer = () => {
               <img className="w-10 mb-3" src={logo} alt="Logo" />
               <a
                 className="flex-none text-xl font-semibold text-white"
-                href="#"
+                href="/"
                 aria-label="Brand"
               >
                 Local Food Lovers Network
               </a>
+
+              {/* Social Links */}
+              <div className="flex mt-4 gap-3">
+                <a
+                  href="https://www.facebook.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-white hover:text-gray-300"
+                >
+                  <FaFacebookF size={20} />
+                </a>
+                <a
+                  href="https://www.twitter.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-white hover:text-gray-300"
+                >
+                  <FaTwitter size={20} />
+                </a>
+                <a
+                  href="https://www.instagram.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-white hover:text-gray-300"
+                >
+                  <FaInstagram size={20} />
+                </a>
+                <a
+                  href="https://www.linkedin.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-white hover:text-gray-300"
+                >
+                  <FaLinkedinIn size={20} />
+                </a>
+              </div>
             </div>
 
             <div className="col-span-1">
@@ -38,7 +80,7 @@ const Footer = () => {
                       key={idx}
                       className="inline-flex gap-x-2 text-gray-300 hover:text-gray-200"
                     >
-                      <a href="#">{item}</a>
+                      <a href="/">{item}</a>
                       {item === "Careers" && (
                         <span className="inline ml-1 text-xs bg-green-500 text-white py-1 px-2 rounded-md">
                           We're hiring
@@ -68,7 +110,7 @@ const Footer = () => {
                   </div>
                   <a
                     className="w-full sm:w-auto whitespace-nowrap inline-flex justify-center items-center gap-x-3 text-center bg-green-500 hover:bg-green-600 border border-transparent text-white font-medium rounded-md transition py-2 px-4"
-                    href="#"
+                    href="/"
                   >
                     Subscribe
                   </a>
@@ -86,26 +128,6 @@ const Footer = () => {
           <p className="text-sm text-gray-300">
             © 2025 Local Food Lovers Network. All rights reserved.
           </p>
-
-          <div className="flex gap-2">
-            {/* Example social icons */}
-            {["facebook", "twitter", "github", "linkedin"].map((icon, idx) => (
-              <a
-                key={idx}
-                className="inline-flex justify-center items-center w-10 h-10 text-center text-gray-200 hover:bg-white/10 rounded-md transition"
-                href="#"
-              >
-                <svg
-                  className="w-4 h-4"
-                  fill="currentColor"
-                  viewBox="0 0 16 16"
-                >
-                  {/* Replace with proper icon paths */}
-                  <circle cx="8" cy="8" r="8" />
-                </svg>
-              </a>
-            ))}
-          </div>
         </div>
       </Container>
     </footer>
