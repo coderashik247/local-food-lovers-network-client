@@ -28,7 +28,7 @@ const AllHomeReviewsCard = () => {
         })}
       </div>
       <div className="text-center">
-        <Link to="/all-food">
+        <Link to="/all-reviews">
           <button className="btn btn-outline btn-success mt-8 mx-auto block">
             See All Recipes
           </button>

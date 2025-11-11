@@ -23,7 +23,7 @@ const RecipeInfo = ({ recipe }) => {
       </div>
 
       {/* Recipe Info */}
-      <div className="space-y-4">
+      <div className="space-y-4.5">
         <p className="text-gray-700 font-medium">
           🍽 Food Name: <span className="font-normal">{recipe.foodName}</span>
         </p>

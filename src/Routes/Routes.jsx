@@ -4,10 +4,11 @@ import Login from "../pages/Login";
 import Register from "../pages/Register";
 import CardDetails from "../components/CardDetails/CardDetails";
 import AllReviewsCard from "../components/ReviewsContainer/AllReviewCard/AllRecipesCard";
-import AddRecipe from "../components/AddElements/addrecipes/AddRecipes";
 import About from "../components/about/about";
 import Qna from "../components/QnaPage/Qna";
 import MyRecipes from "../components/ReviewsContainer/MyReviews/MyReviews";
+import PrivateRoute from "../components/routers/PrivateRoute";
+import AddReview from "../components/AddElements/addrecipes/AddRecipes";
 
 export const router = createBrowserRouter([
   {
@@ -20,18 +21,33 @@ export const router = createBrowserRouter([
   },
   { path: "/about", element: <About /> },
   { path: "/faq", element: <Qna /> },
-  { path: "/my-reviews", element: <MyRecipes /> },
+  {
+    path: "/my-reviews",
+    element: (
+      <PrivateRoute>
+        <MyRecipes />
+      </PrivateRoute>
+    ),
+  },
   {
     path: "/register",
     element: <Register />,
   },
-  { path: "/add-recipes", element: <AddRecipe /> },
   {
-    path: "all-food",
-    element: <AllReviewsCard />,
+    path: "/add-reviews",
+    element: (
+      <PrivateRoute>
+        <AddReview />
+      </PrivateRoute>
+    ),
   },
+  { path: "/all-reviews", element: <AllReviewsCard /> },
   {
     path: "/food-details/:id",
-    element: <CardDetails />,
+    element: (
+      <PrivateRoute>
+        <CardDetails />
+      </PrivateRoute>
+    ),
   },
 ]);
