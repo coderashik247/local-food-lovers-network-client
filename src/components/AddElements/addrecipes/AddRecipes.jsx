@@ -28,7 +28,7 @@ const AddReview = () => {
     const user_photo = user?.photoURL;
 
     try {
-      await axiosInstance.post("/recipes", {
+      await axiosInstance.post("/reviews", {
         foodName,
         photo,
         restaurantName,

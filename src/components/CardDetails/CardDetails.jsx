@@ -2,9 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "../header/Navbar";
 import RecipeInfo from "./RecipeInfo";
-import ReviewList from "./ReviewList";
-import AddReviewButton from "./AddReviewButton";
-import AddReviewModal from "./AddReviewModal";
 import useAuth from "../../hooks/useAuth";
 import useAxios from "../../hooks/useAxios";
 import CardDetailsSkeleton from "../Sekeletion/CardDetailsSkeleton";
@@ -14,24 +11,16 @@ import { FaHeart, FaRegHeart } from "react-icons/fa";
 
 const CardDetails = () => {
   const axios = useAxios();
-  const { productId } = useParams();
+  const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
 
   // ---------- State ----------
   const [recipe, setRecipe] = useState(null);
-  const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Add Review Modal
-  const [addModal, setAddModal] = useState(false);
-  const [newRating, setNewRating] = useState("");
-  const [newText, setNewText] = useState("");
-  const [addErr, setAddErr] = useState("");
-  const [adding, setAdding] = useState(false);
-
-  // Edit Recipe Modal
+  // Edit Modal State
   const [editModal, setEditModal] = useState(false);
   const [editName, setEditName] = useState("");
   const [editLocation, setEditLocation] = useState("");
@@ -39,25 +28,29 @@ const CardDetails = () => {
   const [editError, setEditError] = useState("");
   const [editing, setEditing] = useState(false);
 
-  // Like state
+  // Like State
   const [liked, setLiked] = useState(false);
 
-  // Check if current user is the recipe owner
+  // Check ownership
   const isOwner = recipe?.reviewer_email === user?.email;
 
   // ---------- Fetch Recipe ----------
-
   useEffect(() => {
     const fetchRecipe = async () => {
+      if (!id) return;
+
       try {
         setLoading(true);
-        const { data } = await axios.get(`/recipes/${productId}`);
+        setError("");
+        const { data } = await axios.get(`/reviews/${id}`);
         setRecipe(data);
+
+        // Pre-fill edit form
         setEditName(data.foodName);
         setEditLocation(data.restaurantLocation);
         setEditPhoto(data.photo);
-      } catch (e) {
-        console.error(e);
+      } catch (err) {
+        console.error("Fetch error:", err);
         setError("Failed to load recipe");
       } finally {
         setLoading(false);
@@ -65,135 +58,71 @@ const CardDetails = () => {
     };
 
     fetchRecipe();
-  }, [axios, productId]);
+  }, [id, axios]);
 
-  // ---------- Fetch Reviews ----------
-
-  const fetchReviews = async () => {
-    try {
-      const { data } = await axios.get(`/reviews?recipeId=${productId}`);
-      setReviews(data);
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  useEffect(() => {
-    if (productId) fetchReviews();
-  }, [productId]);
-
-  // ---------- Check if user already liked ----------
-
+  // ---------- Update Like Status ----------
   useEffect(() => {
     if (recipe && user?.email) {
       const hasLiked = recipe.likedBy?.includes(user.email);
       setLiked(hasLiked);
+    } else {
+      setLiked(false);
     }
   }, [recipe, user]);
 
-  // ---------- Add Review ----------
-
-  const handleAdd = async () => {
-    if (!newRating || !newText) return setAddErr("Both fields required");
-    setAdding(true);
-    try {
-      await axios.post("/reviews", {
-        recipe_id: productId,
-        email: user?.email,
-        name: user?.displayName,
-        photo: user?.photoURL,
-        rating: Number(newRating),
-        review_text: newText,
-      });
-      await fetchReviews();
-      setAddModal(false);
-      setNewRating("");
-      setNewText("");
-      setAddErr("");
-    } catch (e) {
-      setAddErr("Failed to add review");
-    } finally {
-      setAdding(false);
-    }
-  };
-
-  // ---------- Toggle Like / Unlike ----------
-
+  // ---------- Handle Like (Only Like, No Unlike) ----------
   const handleLike = async () => {
-    if (!user || isOwner) return;
+    if (!user || liked || isOwner) return;
 
     try {
-      const updatedLikes = liked ? recipe.likes - 1 : recipe.likes + 1;
-
-      const { data } = await axios.patch(`/recipes-likes/${productId}`, {
-        likes: updatedLikes,
+      const { data } = await axios.patch(`/reviews-likes/${id}`, {
+        userEmail: user.email,
       });
 
-      setRecipe((prev) => ({ ...prev, likes: updatedLikes }));
-      setLiked(!liked);
-    } catch (e) {
-      console.error("Failed to toggle like", e);
-      alert("Failed to update like");
+      setRecipe(data); // Update recipe with new likes & likedBy
+    } catch (err) {
+      console.error("Like failed:", err);
+      alert(err.response?.data?.error || "Failed to like");
     }
   };
 
-  // ---------- Update Review ----------
-
-  const handleUpdate = async (reviewId, payload) => {
-    await axios.patch(`/reviews/${reviewId}`, payload);
-    await fetchReviews();
-  };
-
-  // ---------- Delete Review ----------
-
-  const handleDelete = async (reviewId) => {
-    if (!window.confirm("Delete this review?")) return;
-    await axios.delete(`/reviews/${reviewId}`);
-    await fetchReviews();
-  };
-
-  // ---------- Update Recipe ----------
-
+  // ---------- Handle Edit ----------
   const handleEditRecipe = async () => {
     if (!editName || !editLocation || !editPhoto) {
       return setEditError("All fields are required");
     }
+
     setEditing(true);
     try {
-      await axios.patch(`/recipes/${productId}`, {
+      const { data } = await axios.patch(`/reviews/${id}`, {
         foodName: editName,
         restaurantLocation: editLocation,
         photo: editPhoto,
       });
-      const { data } = await axios.get("/recipes");
-      const updated = data.find((r) => r._id === productId);
-      setRecipe(updated);
+
+      setRecipe(data);
       setEditModal(false);
       setEditError("");
-    } catch (e) {
+    } catch (err) {
       setEditError("Failed to update recipe");
     } finally {
       setEditing(false);
     }
   };
 
-  // ---------- Delete Recipe ----------
-
+  // ---------- Handle Delete ----------
   const handleDeleteRecipe = async () => {
-    if (
-      !window.confirm("Delete this entire recipe? All reviews will be removed.")
-    )
-      return;
+    if (!window.confirm("Delete this recipe permanently?")) return;
+
     try {
-      await axios.delete(`/recipes/${productId}`);
+      await axios.delete(`/reviews/${id}`);
       navigate("/");
-    } catch (e) {
+    } catch (err) {
       alert("Failed to delete recipe");
     }
   };
 
   // ---------- Render ----------
-
   if (loading) return <CardDetailsSkeleton />;
   if (error)
     return (
@@ -206,56 +135,54 @@ const CardDetails = () => {
     <>
       <Navbar />
       <div className="container mx-auto px-4 md:px-8 py-12">
-        <div>
-          {/* Back Button */}
-          <button
-            onClick={() => navigate(-1)}
-            className="flex items-center gap-2 mb-6 text-green-800 font-semibold hover:text-green-600 transition-colors"
-          >
-            <IoArrowBack size={20} /> Go Back
-          </button>
+        {/* Back Button */}
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-2 mb-6 text-green-800 font-semibold hover:text-green-600 transition-colors"
+        >
+          <IoArrowBack size={20} /> Go Back
+        </button>
 
-          {/* Edit & Delete Recipe (Only Owner) */}
-          {isOwner && (
-            <div className="flex justify-end gap-3 mb-4">
-              <button
-                onClick={() => setEditModal(true)}
-                className="text-green-600 hover:text-green-700 transition-colors"
-                title="Edit Recipe"
-              >
-                <FiEdit3 size={20} />
-              </button>
-              <button
-                onClick={handleDeleteRecipe}
-                className="text-red-600 hover:text-red-700 transition-colors"
-                title="Delete Recipe"
-              >
-                <FiTrash2 size={20} />
-              </button>
-            </div>
-          )}
-        </div>
+        {/* Owner Actions */}
+        {isOwner && (
+          <div className="flex justify-end gap-3 mb-4">
+            <button
+              onClick={() => setEditModal(true)}
+              className="text-green-600 hover:text-green-700 transition-colors"
+              title="Edit"
+            >
+              <FiEdit3 size={20} />
+            </button>
+            <button
+              onClick={handleDeleteRecipe}
+              className="text-red-600 hover:text-red-700 transition-colors"
+              title="Delete"
+            >
+              <FiTrash2 size={20} />
+            </button>
+          </div>
+        )}
 
         {/* Recipe Layout */}
         <div className="md:flex md:items-start md:gap-10">
-          {/* Recipe Image */}
+          {/* Image Section */}
           <div className="md:w-2/5 w-full rounded-2xl overflow-hidden shadow-lg border border-gray-100 relative">
             <img
               src={recipe.photo}
               alt={recipe.foodName}
-              className="w-full h-96 object-cover transform hover:scale-105 transition-transform duration-500"
+              className="w-full h-96 object-cover hover:scale-105 transition-transform duration-500"
             />
 
-            {/* Like Button */}
+            {/* Like Button - Only Like, No Unlike */}
             <button
               onClick={handleLike}
-              disabled={!user || isOwner}
-              className={`absolute top-6 right-6 p-3 rounded-full shadow-md transition-all duration-200 ${
+              disabled={!user || isOwner || liked}
+              className={`absolute top-6 right-6 p-3 rounded-full shadow-md transition-all duration-300 ${
                 liked
-                  ? "bg-red-100 text-red-500"
-                  : "bg-white bg-opacity-75 text-gray-600"
-              } hover:bg-opacity-100 disabled:opacity-50 disabled:cursor-not-allowed`}
-              title={liked ? "Unlike" : "Like"}
+                  ? "bg-red-500 text-white cursor-not-allowed"
+                  : "bg-white bg-opacity-80 text-gray-700 hover:bg-red-500 hover:text-white"
+              } disabled:opacity-100`}
+              title={liked ? "Already liked" : "Like this recipe"}
             >
               {liked ? (
                 <FaHeart className="text-xl animate-pulse" />
@@ -264,60 +191,21 @@ const CardDetails = () => {
               )}
             </button>
 
-            {/* Likes Count Badge */}
+            {/* Likes Count */}
             <div className="absolute bottom-4 left-4 bg-white bg-opacity-90 px-3 py-1 rounded-full shadow flex items-center gap-1 text-sm font-medium">
               <FaHeart className="text-red-500 text-xs" />
-              <span>{recipe.likes}</span>
+              <span>{recipe.likes || 0}</span>
             </div>
           </div>
 
-          {/* Recipe Details */}
+          {/* Details Section */}
           <div className="md:w-3/5 mt-6 md:mt-0 space-y-6">
             <RecipeInfo recipe={recipe} />
-
-            {/* Reviews Section */}
-            <section>
-              <div className="">
-                <h3 className="text-2xl text-gray-800 font-semibold">
-                  Comments ({reviews.length})
-                </h3>
-                {user && !isOwner && (
-                  <AddReviewButton onClick={() => setAddModal(true)} />
-                )}
-              </div>
-
-              {reviews.length === 0 ? (
-                <p className="text-gray-500 italic">
-                  No reviews yet. Be the first to review!
-                </p>
-              ) : (
-                <ReviewList
-                  reviews={reviews}
-                  onUpdate={handleUpdate}
-                  onDelete={handleDelete}
-                  currentUserEmail={user?.email}
-                  recipePhoto={recipe.photo}
-                />
-              )}
-            </section>
           </div>
         </div>
       </div>
 
-      {/* Add Review Modal */}
-      <AddReviewModal
-        isOpen={addModal}
-        onClose={() => setAddModal(false)}
-        rating={newRating}
-        setRating={setNewRating}
-        text={newText}
-        setText={setNewText}
-        onSubmit={handleAdd}
-        submitting={adding}
-        error={addErr}
-      />
-
-      {/* Edit Recipe Modal */}
+      {/* Edit Modal */}
       {editModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
@@ -361,7 +249,10 @@ const CardDetails = () => {
                 {editing ? "Saving..." : "Save Changes"}
               </button>
               <button
-                onClick={() => setEditModal(false)}
+                onClick={() => {
+                  setEditModal(false);
+                  setEditError("");
+                }}
                 className="flex-1 bg-gray-500 text-white px-4 py-2.5 rounded-lg font-medium hover:bg-gray-600 transition"
               >
                 Cancel

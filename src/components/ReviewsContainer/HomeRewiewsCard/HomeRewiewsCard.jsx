@@ -8,7 +8,7 @@ const AllHomeReviewsCard = () => {
   const [data, setData] = useState([]);
 
   useEffect(() => {
-    axiosInstance.get("all-recipes/like").then((data) => {
+    axiosInstance.get("all-reviews/like").then((data) => {
       setData(data.data);
     });
   }, [axiosInstance]);

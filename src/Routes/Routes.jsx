@@ -31,7 +31,7 @@ export const router = createBrowserRouter([
     element: <AllReviewsCard />,
   },
   {
-    path: "/food-details/:productId",
+    path: "/food-details/:id",
     element: <CardDetails />,
   },
 ]);

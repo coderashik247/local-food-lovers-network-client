@@ -18,7 +18,7 @@ const MyReviews = () => {
 
   const fetchMyRecipes = async () => {
     try {
-      const { data } = await axios.get(`/recipes/email/${user.email}`);
+      const { data } = await axios.get(`/reviews/email/${user.email}`);
       console.log("my reviews", data);
       setRecipes(data);
     } catch (error) {
