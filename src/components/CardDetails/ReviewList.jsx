@@ -16,7 +16,7 @@ const ReviewList = ({
     );
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-6 w-full">
       {reviews.map((r) => (
         <ReviewItem
           key={r._id}

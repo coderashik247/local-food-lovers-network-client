@@ -47,30 +47,6 @@ const CardDetails = () => {
 
   // ---------- Fetch Recipe ----------
 
-  // useEffect(() => {
-  //   const fetchRecipe = async () => {
-  //     try {
-  //       setLoading(true);
-  //       const { data } = await axios.get("/recipes");
-  //       const found = data.find((r) => r._id === productId);
-  //       if (found) {
-  //         setRecipe(found);
-  //         // Pre-fill edit modal
-  //         setEditName(found.foodName);
-  //         setEditLocation(found.restaurantLocation);
-  //         setEditPhoto(found.photo);
-  //       } else {
-  //         setError("Recipe not found!");
-  //       }
-  //     } catch (e) {
-  //       console.error(e);
-  //       setError("Failed to load recipe");
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-  //   fetchRecipe();
-  // }, [axios, productId]);
   useEffect(() => {
     const fetchRecipe = async () => {
       try {
@@ -301,9 +277,9 @@ const CardDetails = () => {
 
             {/* Reviews Section */}
             <section>
-              <div className="flex justify-between items-center mb-4">
+              <div className="">
                 <h3 className="text-2xl text-gray-800 font-semibold">
-                  Reviews ({reviews.length})
+                  Comments ({reviews.length})
                 </h3>
                 {user && !isOwner && (
                   <AddReviewButton onClick={() => setAddModal(true)} />

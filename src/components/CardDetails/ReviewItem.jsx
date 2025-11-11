@@ -1,4 +1,3 @@
-// ReviewItem.jsx
 import React, { useState } from "react";
 import EditReviewModal from "./EditReviewModal";
 import { FiEdit3, FiTrash2 } from "react-icons/fi";
@@ -8,7 +7,7 @@ const ReviewItem = ({ review, onUpdate, onDelete, currentUserEmail }) => {
   const isOwner = review.email === currentUserEmail;
 
   return (
-    <div className="bg-white shadow-lg rounded-2xl p-6 border border-gray-100 flex flex-col md:flex-row md:justify-between items-start gap-6 hover:shadow-xl transition-shadow duration-300">
+    <div className="w-full bg-white shadow-lg rounded-2xl p-6 border border-gray-100 flex flex-col md:flex-row md:justify-between items-start gap-6 hover:shadow-xl transition-shadow duration-300">
       {/* Avatar */}
       <div className="flex-shrink-0">
         <img
@@ -32,14 +31,14 @@ const ReviewItem = ({ review, onUpdate, onDelete, currentUserEmail }) => {
           </span>
         </div>
 
-        <p className="text-gray-700 text-md leading-relaxed">
+        <p className="text-gray-700 text-md leading-relaxed break-words">
           {review.review_text}
         </p>
       </div>
 
-      {/* Edit/Delete buttons at the end */}
+      {/* Edit/Delete buttons */}
       {isOwner && (
-        <div className="flex flex-shrink-0 gap-3 mt-2 md:mt-0">
+        <div className="flex flex-shrink-0 gap-3 mt-4 md:mt-0">
           <button
             onClick={() => setEditOpen(true)}
             className="text-green-600 hover:text-green-700 transition"
