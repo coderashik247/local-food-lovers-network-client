@@ -47,21 +47,39 @@ const CardDetails = () => {
 
   // ---------- Fetch Recipe ----------
 
+  // useEffect(() => {
+  //   const fetchRecipe = async () => {
+  //     try {
+  //       setLoading(true);
+  //       const { data } = await axios.get("/recipes");
+  //       const found = data.find((r) => r._id === productId);
+  //       if (found) {
+  //         setRecipe(found);
+  //         // Pre-fill edit modal
+  //         setEditName(found.foodName);
+  //         setEditLocation(found.restaurantLocation);
+  //         setEditPhoto(found.photo);
+  //       } else {
+  //         setError("Recipe not found!");
+  //       }
+  //     } catch (e) {
+  //       console.error(e);
+  //       setError("Failed to load recipe");
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+  //   fetchRecipe();
+  // }, [axios, productId]);
   useEffect(() => {
     const fetchRecipe = async () => {
       try {
         setLoading(true);
-        const { data } = await axios.get("/recipes");
-        const found = data.find((r) => r._id === productId);
-        if (found) {
-          setRecipe(found);
-          // Pre-fill edit modal
-          setEditName(found.foodName);
-          setEditLocation(found.restaurantLocation);
-          setEditPhoto(found.photo);
-        } else {
-          setError("Recipe not found!");
-        }
+        const { data } = await axios.get(`/recipes/${productId}`);
+        setRecipe(data);
+        setEditName(data.foodName);
+        setEditLocation(data.restaurantLocation);
+        setEditPhoto(data.photo);
       } catch (e) {
         console.error(e);
         setError("Failed to load recipe");
@@ -69,6 +87,7 @@ const CardDetails = () => {
         setLoading(false);
       }
     };
+
     fetchRecipe();
   }, [axios, productId]);
 
@@ -198,7 +217,7 @@ const CardDetails = () => {
   };
 
   // ---------- Render ----------
-  
+
   if (loading) return <CardDetailsSkeleton />;
   if (error)
     return (
