@@ -6,7 +6,7 @@ const AddReviewButton = ({ onClick }) => (
       onClick={onClick}
       className="bg-green-700 text-white px-4 py-2 rounded-md font-semibold hover:bg-green-600 transition"
     >
-      Add Review
+      Add  Review comments
     </button>
   </div>
 );

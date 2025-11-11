@@ -140,7 +140,7 @@ const CardDetails = () => {
             {/* Reviews */}
             <section>
               <h3 className="text-2xl text-gray-800 font-semibold mb-4">
-                Reviews
+                Comments of the Reviews
               </h3>
               <ReviewList
                 reviews={reviews}

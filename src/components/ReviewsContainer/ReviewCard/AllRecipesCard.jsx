@@ -9,7 +9,7 @@ const AllReviewsCard = () => {
   const [data, setData] = useState([]);
 
   useEffect(() => {
-    axiosInstance.get("/recipes?featured=true").then((data) => {
+    axiosInstance.get("/all-recipes").then((data) => {
       setData(data.data);
     });
   }, [axiosInstance]);
