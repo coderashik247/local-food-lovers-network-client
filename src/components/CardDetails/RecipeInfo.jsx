@@ -1,8 +1,10 @@
 import React from "react";
 
 const RecipeInfo = ({ recipe }) => (
-  <div className="bg-white shadow-md rounded-xl p-6 border border-gray-100">
-    <h2 className="text-xl font-semibold text-gray-800">{recipe.foodName}</h2>
+  <div className="bg-white shadow-md rounded-xl p-6 border border-gray-100 space-y-3">
+    <h2 className="text-xl font-semibold text-gray-800">
+      Food Name:{recipe.foodName}
+    </h2>
 
     <p className="text-gray-600">
       <strong>Restaurant Name:</strong> {recipe.restaurantName}
@@ -14,6 +16,9 @@ const RecipeInfo = ({ recipe }) => (
       <strong>Rating:</strong> {recipe.rating} ⭐
     </p>
     <p className="text-gray-600">
+      <strong>Likes:</strong> {recipe.likes} 👍
+    </p>
+    <p className="text-gray-600">
       <strong>Review:</strong> {recipe.reviewText}
     </p>
     <p className="text-gray-600">
@@ -23,8 +28,7 @@ const RecipeInfo = ({ recipe }) => (
       <strong>Reviewer Email:</strong> {recipe.reviewer_email}
     </p>
     <p className="text-gray-600">
-      <strong>Reviewed At:</strong>{" "}
-      {new Date(recipe.createdAt).toLocaleString()}
+      <strong>post time:</strong> {new Date(recipe.createdAt).toLocaleString()}
     </p>
   </div>
 );

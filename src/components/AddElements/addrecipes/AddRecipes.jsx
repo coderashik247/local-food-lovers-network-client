@@ -23,10 +23,9 @@ const AddReview = () => {
     e.preventDefault();
     setLoading(true);
     setError("");
-
-    const userEmail = user?.email;
-    const userName = user?.displayName;
-    const userPhoto = user?.photoURL;
+    const user_email = user?.email;
+    const user_name = user?.displayName;
+    const user_photo = user?.photoURL;
 
     try {
       await axiosInstance.post("/recipes", {
@@ -36,9 +35,9 @@ const AddReview = () => {
         restaurantLocation: location,
         rating: parseFloat(rating),
         reviewText,
-        reviewerEmail: userEmail,
-        reviewerName: userName,
-        reviewerPhoto: userPhoto,
+        reviewer_email: user_email,
+        reviewer_name: user_name,
+        reviewer_photo: user_photo,
       });
       navigate("/all-food");
     } catch (err) {
