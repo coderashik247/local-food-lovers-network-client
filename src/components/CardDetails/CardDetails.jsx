@@ -10,6 +10,7 @@ import useAxios from "../../hooks/useAxios";
 import CardDetailsSkeleton from "../Sekeletion/CardDetailsSkeleton";
 import { IoArrowBack } from "react-icons/io5";
 import { FiEdit3, FiTrash2 } from "react-icons/fi";
+import { FaHeart, FaRegHeart } from "react-icons/fa";
 
 const CardDetails = () => {
   const axios = useAxios();
@@ -38,8 +39,11 @@ const CardDetails = () => {
   const [editError, setEditError] = useState("");
   const [editing, setEditing] = useState(false);
 
+  // Like state
+  const [liked, setLiked] = useState(false);
+
   // Check if current user is the recipe owner
-  const isOwner = recipe?.creatorEmail === user?.email;
+  const isOwner = recipe?.reviewer_email === user?.email;
 
   // ---------- Fetch Recipe ----------
   useEffect(() => {
@@ -81,6 +85,14 @@ const CardDetails = () => {
     if (productId) fetchReviews();
   }, [productId]);
 
+  // ---------- Check if user already liked ----------
+  useEffect(() => {
+    if (recipe && user?.email) {
+      const hasLiked = recipe.likedBy?.includes(user.email);
+      setLiked(hasLiked);
+    }
+  }, [recipe, user]);
+
   // ---------- Add Review ----------
   const handleAdd = async () => {
     if (!newRating || !newText) return setAddErr("Both fields required");
@@ -103,6 +115,25 @@ const CardDetails = () => {
       setAddErr("Failed to add review");
     } finally {
       setAdding(false);
+    }
+  };
+
+  // ---------- Toggle Like / Unlike ----------
+  const handleLike = async () => {
+    if (!user || isOwner) return; // Prevent owner from liking their own recipe
+
+    try {
+      const updatedLikes = liked ? recipe.likes - 1 : recipe.likes + 1;
+
+      const { data } = await axios.patch(`/recipes-likes/${productId}`, {
+        likes: updatedLikes,
+      });
+
+      setRecipe((prev) => ({ ...prev, likes: updatedLikes })); // <-- plural
+      setLiked(!liked);
+    } catch (e) {
+      console.error("Failed to toggle like", e);
+      alert("Failed to update like");
     }
   };
 
@@ -151,7 +182,7 @@ const CardDetails = () => {
       return;
     try {
       await axios.delete(`/recipes/${productId}`);
-      navigate("/"); // Redirect to home
+      navigate("/");
     } catch (e) {
       alert("Failed to delete recipe");
     }
@@ -171,31 +202,29 @@ const CardDetails = () => {
       <Navbar />
       <div className="container mx-auto px-4 md:px-8 py-12">
         <div>
-          {" "}
           {/* Back Button */}
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center gap-2 mb-6 text-green-800 font-semibold hover:text-green-600"
+            className="flex items-center gap-2 mb-6 text-green-800 font-semibold hover:text-green-600 transition-colors"
           >
             <IoArrowBack size={20} /> Go Back
           </button>
+
           {/* Edit & Delete Recipe (Only Owner) */}
-          {user.email === recipe.reviewer_email && (
+          {isOwner && (
             <div className="flex justify-end gap-3 mb-4">
               <button
                 onClick={() => setEditModal(true)}
-                className="text-green-600 hover:text-green-700 transition"
+                className="text-green-600 hover:text-green-700 transition-colors"
                 title="Edit Recipe"
               >
-                edit
                 <FiEdit3 size={20} />
               </button>
               <button
                 onClick={handleDeleteRecipe}
-                className="text-red-600 hover:text-red-700 transition"
+                className="text-red-600 hover:text-red-700 transition-colors"
                 title="Delete Recipe"
               >
-                delete
                 <FiTrash2 size={20} />
               </button>
             </div>
@@ -205,12 +234,36 @@ const CardDetails = () => {
         {/* Recipe Layout */}
         <div className="md:flex md:items-start md:gap-10">
           {/* Recipe Image */}
-          <div className="md:w-2/5 w-full rounded-2xl overflow-hidden shadow-lg border border-gray-100">
+          <div className="md:w-2/5 w-full rounded-2xl overflow-hidden shadow-lg border border-gray-100 relative">
             <img
               src={recipe.photo}
               alt={recipe.foodName}
               className="w-full h-96 object-cover transform hover:scale-105 transition-transform duration-500"
             />
+
+            {/* Like Button */}
+            <button
+              onClick={handleLike}
+              disabled={!user || isOwner}
+              className={`absolute top-6 right-6 p-3 rounded-full shadow-md transition-all duration-200 ${
+                liked
+                  ? "bg-red-100 text-red-500"
+                  : "bg-white bg-opacity-75 text-gray-600"
+              } hover:bg-opacity-100 disabled:opacity-50 disabled:cursor-not-allowed`}
+              title={liked ? "Unlike" : "Like"}
+            >
+              {liked ? (
+                <FaHeart className="text-xl animate-pulse" />
+              ) : (
+                <FaRegHeart className="text-xl" />
+              )}
+            </button>
+
+            {/* Likes Count Badge */}
+            <div className="absolute bottom-4 left-4 bg-white bg-opacity-90 px-3 py-1 rounded-full shadow flex items-center gap-1 text-sm font-medium">
+              <FaHeart className="text-red-500 text-xs" />
+              <span>{recipe.likes}</span>
+            </div>
           </div>
 
           {/* Recipe Details */}
@@ -219,22 +272,31 @@ const CardDetails = () => {
 
             {/* Reviews Section */}
             <section>
-              <h3 className="text-2xl text-gray-800 font-semibold mb-4">
-                Reviews
-              </h3>
-              <ReviewList
-                reviews={reviews}
-                onUpdate={handleUpdate}
-                onDelete={handleDelete}
-                currentUserEmail={user?.email}
-                recipePhoto={recipe.photo}
-              />
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-2xl text-gray-800 font-semibold">
+                  Reviews ({reviews.length})
+                </h3>
+                {user && !isOwner && (
+                  <AddReviewButton onClick={() => setAddModal(true)} />
+                )}
+              </div>
+
+              {reviews.length === 0 ? (
+                <p className="text-gray-500 italic">
+                  No reviews yet. Be the first to review!
+                </p>
+              ) : (
+                <ReviewList
+                  reviews={reviews}
+                  onUpdate={handleUpdate}
+                  onDelete={handleDelete}
+                  currentUserEmail={user?.email}
+                  recipePhoto={recipe.photo}
+                />
+              )}
             </section>
           </div>
         </div>
-
-        {/* Add Review Button */}
-        <AddReviewButton onClick={() => setAddModal(true)} />
       </div>
 
       {/* Add Review Modal */}
@@ -252,46 +314,50 @@ const CardDetails = () => {
 
       {/* Edit Recipe Modal */}
       {editModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-lg">
-            <h2 className="text-lg font-bold mb-4">Edit Recipe</h2>
-            {editError && <p className="text-red-500 mb-2">{editError}</p>}
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
+            <h2 className="text-xl font-bold mb-4">Edit Recipe</h2>
+            {editError && (
+              <p className="text-red-500 mb-3 text-sm">{editError}</p>
+            )}
 
             <input
               type="text"
               value={editName}
               onChange={(e) => setEditName(e.target.value)}
               placeholder="Food Name"
-              className="w-full border p-2 rounded mb-3 focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full border border-gray-300 p-3 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-green-500 transition"
             />
             <input
               type="text"
               value={editLocation}
               onChange={(e) => setEditLocation(e.target.value)}
               placeholder="Restaurant Location"
-              className="w-full border p-2 rounded mb-3 focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full border border-gray-300 p-3 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-green-500 transition"
             />
             <input
-              type="text"
+              type="url"
               value={editPhoto}
               onChange={(e) => setEditPhoto(e.target.value)}
               placeholder="Photo URL"
-              className="w-full border p-2 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full border border-gray-300 p-3 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-green-500 transition"
             />
 
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               <button
                 onClick={handleEditRecipe}
                 disabled={editing}
-                className={`bg-green-600 text-white px-4 py-2 rounded flex-1 transition ${
-                  editing ? "opacity-50" : "hover:bg-green-700"
+                className={`flex-1 bg-green-600 text-white px-4 py-2.5 rounded-lg font-medium transition ${
+                  editing
+                    ? "opacity-50 cursor-not-allowed"
+                    : "hover:bg-green-700"
                 }`}
               >
-                {editing ? "Saving..." : "Save"}
+                {editing ? "Saving..." : "Save Changes"}
               </button>
               <button
                 onClick={() => setEditModal(false)}
-                className="bg-gray-500 text-white px-4 py-2 rounded flex-1 hover:bg-gray-600 transition"
+                className="flex-1 bg-gray-500 text-white px-4 py-2.5 rounded-lg font-medium hover:bg-gray-600 transition"
               >
                 Cancel
               </button>
