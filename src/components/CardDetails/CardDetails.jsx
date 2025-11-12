@@ -9,6 +9,7 @@ import CardDetailsSkeleton from "../Sekeletion/CardDetailsSkeleton";
 import { IoArrowBack } from "react-icons/io5";
 import { FiEdit3, FiTrash2 } from "react-icons/fi";
 import { FaThumbsUp, FaRegThumbsUp, FaHeart, FaRegHeart } from "react-icons/fa";
+import Swal from "sweetalert2";
 
 const CardDetails = () => {
   const axios = useAxios();
@@ -34,7 +35,6 @@ const CardDetails = () => {
     queryKey: ["recipe", id],
     queryFn: async () => {
       const { data } = await axios.get(`/reviews/${id}`);
-      // Pre-fill edit form
       setEditName(data.foodName);
       setEditLocation(data.restaurantLocation);
       setEditPhoto(data.photo);
@@ -47,10 +47,14 @@ const CardDetails = () => {
   const mutationOptions = {
     onSuccess: (data) => {
       queryClient.setQueryData(["recipe", id], data);
-      queryClient.invalidateQueries(["recipes"]); // Optional: if list exists
+      queryClient.invalidateQueries(["recipes"]);
     },
     onError: (err) => {
-      alert(err.response?.data?.error || "Operation failed");
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: err.response?.data?.error || "Operation failed",
+      });
     },
   };
 
@@ -59,6 +63,15 @@ const CardDetails = () => {
     mutationFn: () =>
       axios.patch(`/reviews-likes/${id}`, { userEmail: user.email }),
     ...mutationOptions,
+    onSuccess: () => {
+      Swal.fire({
+        icon: "success",
+        title: "Liked!",
+        text: "You liked this recipe",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+    },
   });
 
   // Bookmark Mutation
@@ -66,6 +79,15 @@ const CardDetails = () => {
     mutationFn: () =>
       axios.patch(`/reviews/${id}/bookmark`, { userEmail: user.email }),
     ...mutationOptions,
+    onSuccess: () => {
+      Swal.fire({
+        icon: "success",
+        title: "Bookmarked!",
+        text: "Recipe added to your bookmarks",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+    },
   });
 
   // Edit Mutation
@@ -79,9 +101,21 @@ const CardDetails = () => {
     onSuccess: () => {
       setEditModal(false);
       setEditError("");
+      Swal.fire({
+        icon: "success",
+        title: "Updated!",
+        text: "Recipe updated successfully",
+        timer: 1500,
+        showConfirmButton: false,
+      });
     },
     onError: () => {
       setEditError("Failed to update recipe");
+      Swal.fire({
+        icon: "error",
+        title: "Failed!",
+        text: "Failed to update recipe",
+      });
     },
   });
 
@@ -89,6 +123,13 @@ const CardDetails = () => {
   const deleteMutation = useMutation({
     mutationFn: () => axios.delete(`/reviews/${id}`),
     onSuccess: () => {
+      Swal.fire({
+        icon: "success",
+        title: "Deleted!",
+        text: "Recipe deleted successfully",
+        timer: 1500,
+        showConfirmButton: false,
+      });
       navigate("/");
     },
   });
@@ -112,9 +153,19 @@ const CardDetails = () => {
   };
 
   const handleDelete = () => {
-    if (window.confirm("Delete this recipe permanently?")) {
-      deleteMutation.mutate();
-    }
+    Swal.fire({
+      title: "Are you sure?",
+      text: "Delete this recipe permanently?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        deleteMutation.mutate();
+      }
+    });
   };
 
   // ---------- Derived ----------

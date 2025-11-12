@@ -35,7 +35,7 @@ const BookmarkedReviews = () => {
       {/* Title */}
       <div className="bg-green-50 py-8">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-2xl font-bold text-green-900">
+          <h2 className="text-2xl font-bold ">
             My Bookmarked Reviews
           </h2>
         </div>

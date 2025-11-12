@@ -1,50 +1,49 @@
-import React, { useState } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import useAxios from "../../../hooks/useAxios";
 import Navbar from "../../header/Navbar";
 import Footer from "../../Footer/Footer";
 import useAuth from "../../../hooks/useAuth";
+import { useForm } from "react-hook-form";
+import Swal from "sweetalert2";
 
 const AddReview = () => {
   const axiosInstance = useAxios();
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const [foodName, setFoodName] = useState("");
-  const [photo, setPhoto] = useState("");
-  const [restaurantName, setRestaurantName] = useState("");
-  const [location, setLocation] = useState("");
-  const [rating, setRating] = useState("");
-  const [reviewText, setReviewText] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    reset,
+  } = useForm();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-    const user_email = user?.email;
-    const user_name = user?.displayName;
-    const user_photo = user?.photoURL;
-
+  const onSubmit = async (formData) => {
     try {
       await axiosInstance.post("/reviews", {
-        foodName,
-        photo,
-        restaurantName,
-        restaurantLocation: location,
-        rating: parseFloat(rating),
-        reviewText,
-        reviewer_email: user_email,
-        reviewer_name: user_name,
-        reviewer_photo: user_photo,
+        ...formData,
+        rating: parseFloat(formData.rating),
+        reviewer_email: user?.email,
+        reviewer_name: user?.displayName,
+        reviewer_photo: user?.photoURL,
       });
+
+      Swal.fire({
+        icon: "success",
+        title: "Review Added!",
+        text: "Your review has been successfully added.",
+      });
+
+      reset();
       navigate("/all-reviews");
     } catch (err) {
       console.error(err);
-      setError("Failed to add review!");
-    } finally {
-      setLoading(false);
+      Swal.fire({
+        icon: "error",
+        title: "Failed!",
+        text: "Failed to add review. Please try again.",
+      });
     }
   };
 
@@ -57,19 +56,20 @@ const AddReview = () => {
             Add New Review
           </h1>
 
-          {error && <p className="text-red-500 text-center mb-4">{error}</p>}
-
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div>
               <label className="block text-gray-700 mb-1">Food Name</label>
               <input
                 type="text"
                 placeholder="Enter food name"
-                value={foodName}
-                onChange={(e) => setFoodName(e.target.value)}
+                {...register("foodName", { required: "Food name is required" })}
                 className="w-full border border-gray-300 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500"
-                required
               />
+              {errors.foodName && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.foodName.message}
+                </p>
+              )}
             </div>
 
             <div>
@@ -77,11 +77,14 @@ const AddReview = () => {
               <input
                 type="text"
                 placeholder="Enter image URL"
-                value={photo}
-                onChange={(e) => setPhoto(e.target.value)}
+                {...register("photo", { required: "Image URL is required" })}
                 className="w-full border border-gray-300 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500"
-                required
               />
+              {errors.photo && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.photo.message}
+                </p>
+              )}
             </div>
 
             <div>
@@ -91,11 +94,16 @@ const AddReview = () => {
               <input
                 type="text"
                 placeholder="Enter restaurant name"
-                value={restaurantName}
-                onChange={(e) => setRestaurantName(e.target.value)}
+                {...register("restaurantName", {
+                  required: "Restaurant name is required",
+                })}
                 className="w-full border border-gray-300 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500"
-                required
               />
+              {errors.restaurantName && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.restaurantName.message}
+                </p>
+              )}
             </div>
 
             <div>
@@ -103,11 +111,16 @@ const AddReview = () => {
               <input
                 type="text"
                 placeholder="Enter location"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
+                {...register("restaurantLocation", {
+                  required: "Location is required",
+                })}
                 className="w-full border border-gray-300 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500"
-                required
               />
+              {errors.restaurantLocation && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.restaurantLocation.message}
+                </p>
+              )}
             </div>
 
             <div>
@@ -118,31 +131,43 @@ const AddReview = () => {
                 min="0"
                 max="5"
                 placeholder="Enter rating"
-                value={rating}
-                onChange={(e) => setRating(e.target.value)}
+                {...register("rating", {
+                  required: "Rating is required",
+                  min: { value: 0, message: "Minimum rating is 0" },
+                  max: { value: 5, message: "Maximum rating is 5" },
+                })}
                 className="w-full border border-gray-300 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500"
-                required
               />
+              {errors.rating && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.rating.message}
+                </p>
+              )}
             </div>
 
             <div>
               <label className="block text-gray-700 mb-1">Review Text</label>
               <textarea
-                placeholder="Write your review"
-                value={reviewText}
-                onChange={(e) => setReviewText(e.target.value)}
                 rows={4}
+                placeholder="Write your review"
+                {...register("reviewText", {
+                  required: "Review text is required",
+                })}
                 className="w-full border border-gray-300 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500"
-                required
               />
+              {errors.reviewText && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.reviewText.message}
+                </p>
+              )}
             </div>
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={isSubmitting}
               className="w-full bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-500 transition-colors"
             >
-              {loading ? "Adding..." : "Add Review"}
+              {isSubmitting ? "Adding..." : "Add Review"}
             </button>
           </form>
         </div>

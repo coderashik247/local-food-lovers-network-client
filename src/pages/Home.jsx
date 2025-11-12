@@ -4,6 +4,7 @@ import Slider from "../components/header/Slider";
 import ServiceCard from "../components/ServiceCard/ServiceCard";
 import TestimonialCard from "../components/TestimonialCard/TestimonialCard";
 import AllHomeReviewsCard from "../components/ReviewsContainer/HomeRewiewsCard/HomeRewiewsCard";
+import HomeBookmark from "../components/AddElements/addBookMark/HomeBookMark";
 
 const Home = () => {
   return (
@@ -12,14 +13,13 @@ const Home = () => {
         <Navbar />
       </div>
 
-
-        <div className="space-y-10">
-          <Slider />
-          <ServiceCard />
-          <AllHomeReviewsCard />
-          
-          <TestimonialCard />
-        </div>
+      <div className="space-y-10">
+        <Slider />
+        <ServiceCard />
+        <AllHomeReviewsCard />
+        <HomeBookmark />
+        <TestimonialCard />
+      </div>
     </>
   );
 };
