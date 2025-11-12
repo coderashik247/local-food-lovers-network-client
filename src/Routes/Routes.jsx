@@ -9,6 +9,8 @@ import Qna from "../components/QnaPage/Qna";
 import MyRecipes from "../components/ReviewsContainer/MyReviews/MyReviews";
 import PrivateRoute from "../components/routers/PrivateRoute";
 import AddReview from "../components/AddElements/addrecipes/AddRecipes";
+import NotFound from "../components/Error/NotFound";
+import BookmarkedReviews from "../components/AddElements/addBookMark/BookMark";
 
 export const router = createBrowserRouter([
   {
@@ -42,11 +44,20 @@ export const router = createBrowserRouter([
     ),
   },
   { path: "/all-reviews", element: <AllReviewsCard /> },
+  { path: "*", element: <NotFound /> },
   {
     path: "/food-details/:id",
     element: (
       <PrivateRoute>
         <CardDetails />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: "favorite",
+    element: (
+      <PrivateRoute>
+        <BookmarkedReviews />
       </PrivateRoute>
     ),
   },

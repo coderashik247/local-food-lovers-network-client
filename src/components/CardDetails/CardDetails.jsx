@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Navbar from "../header/Navbar";
 import RecipeInfo from "./RecipeInfo";
 import useAuth from "../../hooks/useAuth";
@@ -7,126 +8,127 @@ import useAxios from "../../hooks/useAxios";
 import CardDetailsSkeleton from "../Sekeletion/CardDetailsSkeleton";
 import { IoArrowBack } from "react-icons/io5";
 import { FiEdit3, FiTrash2 } from "react-icons/fi";
-import { FaHeart, FaRegHeart } from "react-icons/fa";
+import { FaThumbsUp, FaRegThumbsUp, FaHeart, FaRegHeart } from "react-icons/fa";
 
 const CardDetails = () => {
   const axios = useAxios();
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const queryClient = useQueryClient();
 
-  // ---------- State ----------
-  const [recipe, setRecipe] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  // Edit Modal State
+  // ---------- Edit Modal State ----------
   const [editModal, setEditModal] = useState(false);
   const [editName, setEditName] = useState("");
   const [editLocation, setEditLocation] = useState("");
   const [editPhoto, setEditPhoto] = useState("");
   const [editError, setEditError] = useState("");
-  const [editing, setEditing] = useState(false);
-
-  // Like State
-  const [liked, setLiked] = useState(false);
-
-  // Check ownership
-  const isOwner = recipe?.reviewer_email === user?.email;
 
   // ---------- Fetch Recipe ----------
-  useEffect(() => {
-    const fetchRecipe = async () => {
-      if (!id) return;
+  const {
+    data: recipe,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ["recipe", id],
+    queryFn: async () => {
+      const { data } = await axios.get(`/reviews/${id}`);
+      // Pre-fill edit form
+      setEditName(data.foodName);
+      setEditLocation(data.restaurantLocation);
+      setEditPhoto(data.photo);
+      return data;
+    },
+    enabled: !!id,
+  });
 
-      try {
-        setLoading(true);
-        setError("");
-        const { data } = await axios.get(`/reviews/${id}`);
-        setRecipe(data);
-
-        // Pre-fill edit form
-        setEditName(data.foodName);
-        setEditLocation(data.restaurantLocation);
-        setEditPhoto(data.photo);
-      } catch (err) {
-        console.error("Fetch error:", err);
-        setError("Failed to load recipe");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchRecipe();
-  }, [id, axios]);
-
-  // ---------- Update Like Status ----------
-  useEffect(() => {
-    if (recipe && user?.email) {
-      const hasLiked = recipe.likedBy?.includes(user.email);
-      setLiked(hasLiked);
-    } else {
-      setLiked(false);
-    }
-  }, [recipe, user]);
-
-  // ---------- Handle Like (Only Like, No Unlike) ----------
-  const handleLike = async () => {
-    if (!user || liked || isOwner) return;
-
-    try {
-      const { data } = await axios.patch(`/reviews-likes/${id}`, {
-        userEmail: user.email,
-      });
-
-      setRecipe(data); // Update recipe with new likes & likedBy
-    } catch (err) {
-      console.error("Like failed:", err);
-      alert(err.response?.data?.error || "Failed to like");
-    }
+  // ---------- Mutations ----------
+  const mutationOptions = {
+    onSuccess: (data) => {
+      queryClient.setQueryData(["recipe", id], data);
+      queryClient.invalidateQueries(["recipes"]); // Optional: if list exists
+    },
+    onError: (err) => {
+      alert(err.response?.data?.error || "Operation failed");
+    },
   };
 
-  // ---------- Handle Edit ----------
-  const handleEditRecipe = async () => {
-    if (!editName || !editLocation || !editPhoto) {
-      return setEditError("All fields are required");
-    }
+  // Like Mutation
+  const likeMutation = useMutation({
+    mutationFn: () =>
+      axios.patch(`/reviews-likes/${id}`, { userEmail: user.email }),
+    ...mutationOptions,
+  });
 
-    setEditing(true);
-    try {
-      const { data } = await axios.patch(`/reviews/${id}`, {
+  // Bookmark Mutation
+  const bookmarkMutation = useMutation({
+    mutationFn: () =>
+      axios.patch(`/reviews/${id}/bookmark`, { userEmail: user.email }),
+    ...mutationOptions,
+  });
+
+  // Edit Mutation
+  const editMutation = useMutation({
+    mutationFn: () =>
+      axios.patch(`/reviews/${id}`, {
         foodName: editName,
         restaurantLocation: editLocation,
         photo: editPhoto,
-      });
-
-      setRecipe(data);
+      }),
+    onSuccess: () => {
       setEditModal(false);
       setEditError("");
-    } catch (err) {
+    },
+    onError: () => {
       setEditError("Failed to update recipe");
-    } finally {
-      setEditing(false);
-    }
-  };
+    },
+  });
 
-  // ---------- Handle Delete ----------
-  const handleDeleteRecipe = async () => {
-    if (!window.confirm("Delete this recipe permanently?")) return;
-
-    try {
-      await axios.delete(`/reviews/${id}`);
+  // Delete Mutation
+  const deleteMutation = useMutation({
+    mutationFn: () => axios.delete(`/reviews/${id}`),
+    onSuccess: () => {
       navigate("/");
-    } catch (err) {
-      alert("Failed to delete recipe");
+    },
+  });
+
+  // ---------- Handlers ----------
+  const handleLike = () => {
+    if (!user || isOwner || recipe?.likedBy?.includes(user.email)) return;
+    likeMutation.mutate();
+  };
+
+  const handleBookmark = () => {
+    if (!user || isOwner) return;
+    bookmarkMutation.mutate();
+  };
+
+  const handleEdit = () => {
+    if (!editName || !editLocation || !editPhoto) {
+      return setEditError("All fields are required");
+    }
+    editMutation.mutate();
+  };
+
+  const handleDelete = () => {
+    if (window.confirm("Delete this recipe permanently?")) {
+      deleteMutation.mutate();
     }
   };
+
+  // ---------- Derived ----------
+  const isOwner = recipe?.reviewer_email === user?.email;
+  const liked = recipe?.likedBy?.includes(user?.email);
+  const bookmarked = recipe?.bookmarkedBy?.includes(user?.email);
 
   // ---------- Render ----------
-  if (loading) return <CardDetailsSkeleton />;
-  if (error)
+  if (isLoading) return <CardDetailsSkeleton />;
+  if (isError)
     return (
-      <p className="text-center mt-10 text-red-500 font-medium">{error}</p>
+      <p className="text-center mt-10 text-red-500 font-medium">
+        {error?.message || "Failed to load recipe"}
+      </p>
     );
   if (!recipe)
     return <p className="text-center mt-10 text-gray-600">No recipe found.</p>;
@@ -154,8 +156,9 @@ const CardDetails = () => {
               <FiEdit3 size={20} />
             </button>
             <button
-              onClick={handleDeleteRecipe}
-              className="text-red-600 hover:text-red-700 transition-colors"
+              onClick={handleDelete}
+              disabled={deleteMutation.isPending}
+              className="text-red-600 hover:text-red-700 transition-colors disabled:opacity-50"
               title="Delete"
             >
               <FiTrash2 size={20} />
@@ -173,29 +176,55 @@ const CardDetails = () => {
               className="w-full h-96 object-cover hover:scale-105 transition-transform duration-500"
             />
 
-            {/* Like Button - Only Like, No Unlike */}
+            {/* Like Button */}
             <button
               onClick={handleLike}
-              disabled={!user || isOwner || liked}
+              disabled={!user || isOwner || liked || likeMutation.isPending}
               className={`absolute top-6 right-6 p-3 rounded-full shadow-md transition-all duration-300 ${
                 liked
-                  ? "bg-red-500 text-white cursor-not-allowed"
-                  : "bg-white bg-opacity-80 text-gray-700 hover:bg-red-500 hover:text-white"
-              } disabled:opacity-100`}
+                  ? "bg-blue-600 text-white"
+                  : "bg-white bg-opacity-80 text-gray-700 hover:bg-white"
+              } disabled:opacity-50 disabled:cursor-not-allowed`}
               title={liked ? "Already liked" : "Like this recipe"}
             >
               {liked ? (
+                <FaThumbsUp className="text-xl animate-pulse" />
+              ) : (
+                <FaRegThumbsUp className="text-xl hover:text-blue-600 transition-colors" />
+              )}
+            </button>
+
+            {/* Bookmark Button */}
+            <button
+              onClick={handleBookmark}
+              disabled={!user || isOwner || bookmarkMutation.isPending}
+              className={`absolute top-3 left-3 p-3 rounded-full shadow-md transition-all duration-300 ${
+                bookmarked
+                  ? "bg-red-500 text-white"
+                  : "bg-white bg-opacity-80 text-gray-700 hover:bg-white"
+              } disabled:opacity-50 disabled:cursor-not-allowed`}
+              title={bookmarked ? "Bookmarked" : "Bookmark this recipe"}
+            >
+              {bookmarked ? (
                 <FaHeart className="text-xl animate-pulse" />
               ) : (
-                <FaRegHeart className="text-xl" />
+                <FaRegHeart className="text-xl hover:text-red-500 transition-colors" />
               )}
             </button>
 
             {/* Likes Count */}
             <div className="absolute bottom-4 left-4 bg-white bg-opacity-90 px-3 py-1 rounded-full shadow flex items-center gap-1 text-sm font-medium">
-              <FaHeart className="text-red-500 text-xs" />
+              <FaThumbsUp className="text-blue-600 text-xs" />
               <span>{recipe.likes || 0}</span>
             </div>
+
+            {/* Bookmark Count (Optional) */}
+            {recipe.bookmarks > 0 && (
+              <div className="absolute bottom-4 right-4 bg-white bg-opacity-90 px-3 py-1 rounded-full shadow flex items-center gap-1 text-sm font-medium">
+                <FaHeart className="text-red-500 text-xs" />
+                <span>{recipe.bookmarks}</span>
+              </div>
+            )}
           </div>
 
           {/* Details Section */}
@@ -238,15 +267,15 @@ const CardDetails = () => {
 
             <div className="flex gap-3">
               <button
-                onClick={handleEditRecipe}
-                disabled={editing}
+                onClick={handleEdit}
+                disabled={editMutation.isPending}
                 className={`flex-1 bg-green-600 text-white px-4 py-2.5 rounded-lg font-medium transition ${
-                  editing
+                  editMutation.isPending
                     ? "opacity-50 cursor-not-allowed"
                     : "hover:bg-green-700"
                 }`}
               >
-                {editing ? "Saving..." : "Save Changes"}
+                {editMutation.isPending ? "Saving..." : "Save Changes"}
               </button>
               <button
                 onClick={() => {
