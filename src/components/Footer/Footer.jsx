@@ -124,7 +124,7 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="mt-5 sm:mt-12 grid gap-y-2 sm:gap-y-0 sm:flex sm:justify-between sm:items-center bg-green-900 foodContainer">
+        <div className="mt-5 sm:mt-12 grid gap-y-2 sm:gap-y-0 sm:flex sm:justify-between sm:items-center  foodContainer">
           <p className="text-sm text-gray-300">
             © 2025 Local Food Lovers Network. All rights reserved.
           </p>
