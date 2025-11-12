@@ -19,7 +19,6 @@ const MyReviews = () => {
   const fetchMyRecipes = async () => {
     try {
       const { data } = await axios.get(`/reviews/email/${user.email}`);
-      console.log("my reviews", data);
       setRecipes(data);
     } catch (error) {
       console.error("Error loading my recipes:", error);
@@ -27,21 +26,34 @@ const MyReviews = () => {
   };
 
   return (
-    <div className="">
+    <div className=" flex flex-col">
       <Navbar />
-      <h1 className="text-2xl font-bold mb-6 text-center">My Reviews</h1>
 
-      {recipes.length === 0 ? (
-        <p className="text-center text-gray-500">
-          You haven’t added any recipes yet.
+      {/*  Responsive Title Section */}
+      <div className="text-center mt-10 mb-8 px-4">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-black">
+          My Reviews
+        </h1>
+        <p className="text-gray-500 text-base sm:text-lg mt-3 max-w-xl mx-auto">
+          Manage and view all the food reviews you’ve shared with the community.
         </p>
-      ) : (
-        <div className="grid md:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-6">
-          {recipes.map((recipe) => (
-            <Card key={recipe._id} recipes={recipe} />
-          ))}
-        </div>
-      )}
+      </div>
+
+      {/*  Reviews Grid */}
+      <div className="flex-grow container mx-auto px-4">
+        {recipes.length === 0 ? (
+          <p className="text-center text-gray-500 text-lg py-16">
+            You haven’t added any reviews yet.
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 pb-16">
+            {recipes.map((recipe) => (
+              <Card key={recipe._id} recipes={recipe} />
+            ))}
+          </div>
+        )}
+      </div>
+
       <Footer />
     </div>
   );

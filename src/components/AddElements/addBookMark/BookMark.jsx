@@ -33,11 +33,9 @@ const BookmarkedReviews = () => {
       <Navbar />
 
       {/* Title */}
-      <div className="bg-green-50 py-8">
+      <div className=" py-8">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-2xl font-bold ">
-            My Bookmarked Reviews
-          </h2>
+          <h2 className="text-2xl font-bold ">My Bookmarked Reviews</h2>
         </div>
       </div>
 

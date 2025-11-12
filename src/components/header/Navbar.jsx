@@ -19,97 +19,68 @@ const Navbar = () => {
 
   const links = [
     { path: "/", name: "Home" },
-    { path: "/all-reviews", name: "All Food" },
+    { path: "/all-reviews", name: "All Reviews" },
     { path: "/add-reviews", name: "Add Reviews" },
     { path: "/my-reviews", name: "My Reviews" },
     { path: "/about", name: "About" },
     { path: "/favorite", name: "Favorite" },
     { path: "/faq", name: "FAQ" },
-  ].map((link, idx) => (
-    <li key={idx}>
-      <NavLink
-        className={({ isActive }) =>
-          isActive
-            ? "font-bold text-lg border-b-2 px-6 text-green-500"
-            : "font-bold text-lg px-6"
-        }
-        to={link.path}
-      >
-        {link.name}
-      </NavLink>
-    </li>
-  ));
+  ];
 
   return (
-    <Container className="border-b border-green-500">
-      <div className="navbar flex justify-between items-center">
-        {/* Navbar Start */}
-        <div className="navbar-start flex items-center gap-2">
-          {/* Mobile Menu Button */}
-          <div className="lg:hidden">
-            <button
-              onClick={() => setMobileOpen(!mobileOpen)}
-              className="btn btn-ghost"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
+    <div>
+      <nav className="flex justify-between items-center   container py-4 mx-auto  relative">
+        {/* Logo */}
+        <Link to="/" className="flex items-center gap-2">
+          <img
+            src={logo}
+            alt="logo"
+            className="h-10 w-10 rounded-full border-2 border-green-500 shadow-sm"
+          />
+          <span className="text-3xl fontShadows text-green-500 hover:text-green-600 transition-all">
+            Food Lovers
+          </span>
+        </Link>
+
+        {/* Desktop Links */}
+        <ul className="hidden lg:flex gap-6 items-center">
+          {links.map((link, idx) => (
+            <li key={idx}>
+              <NavLink
+                className={({ isActive }) =>
+                  isActive
+                    ? "font-semibold text-lg border-b-2 border-green-500 text-green-600"
+                    : "font-semibold text-lg text-gray-700 hover:text-green-500 transition-all"
+                }
+                to={link.path}
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              </svg>
-            </button>
-            {mobileOpen && (
-              <ul className="menu menu-sm dropdown-content bg-base-100 rounded-box z-10 mt-2 w-52 p-2 shadow">
-                {links}
-              </ul>
-            )}
-          </div>
+                {link.name}
+              </NavLink>
+            </li>
+          ))}
+        </ul>
 
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
-            <img src={logo} alt="logo" className="h-10 w-10" />
-            <span className="btn btn-ghost text-4xl text-green-500 fontShadows">
-              Food Lovers
-            </span>
-          </Link>
-        </div>
-
-        {/* Navbar Center */}
-        <div className="navbar-center hidden lg:flex">
-          <ul className="menu menu-horizontal px-1">{links}</ul>
-        </div>
-
-        {/* Navbar End */}
-        <div className="navbar-end">
+        {/* Right Side */}
+        <div className="flex items-center gap-3">
           {user ? (
             <div className="relative">
               <button
                 onClick={() => setUserOpen(!userOpen)}
-                className="flex items-center justify-center transition-all"
+                className="relative focus:outline-none"
               >
-                <div className="relative inline-block">
-                  <img
-                    className="h-10 w-10 rounded-full ring-2 ring-white"
-                    src={user.photoURL}
-                    alt="User"
-                  />
-                  <span className="absolute top-0 right-0 block h-2.5 w-2.5 rounded-full ring-2 ring-white bg-green-500"></span>
-                </div>
+                <img
+                  src={user.photoURL}
+                  alt="User"
+                  className="h-10 w-10 rounded-full ring-2 ring-green-500 shadow-md"
+                />
+                <span className="absolute top-0 right-0 block h-2.5 w-2.5 rounded-full bg-green-500 ring-2 ring-white animate-pulse"></span>
               </button>
               {userOpen && (
-                <ul className="absolute right-0 mt-2 w-52 bg-base-100 rounded-box shadow p-2 z-10">
+                <ul className="absolute right-0 mt-2 w-40 bg-white rounded-md shadow-lg p-2 z-20">
                   <li>
                     <button
                       onClick={handleLogOut}
-                      className="flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-white bg-green-500 rounded-md hover:bg-green-600 transition-all"
+                      className="w-full text-center py-2 px-4 bg-green-500 text-white rounded-md hover:bg-green-600 transition-all"
                     >
                       Logout
                     </button>
@@ -118,16 +89,67 @@ const Navbar = () => {
               )}
             </div>
           ) : (
-            <Link
-              className="btn bg-green-500 hover:bg-green-600 text-white"
-              to="/login"
-            >
-              Login
-            </Link>
+            <div className="flex gap-3">
+              <Link
+                to="/login"
+                className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md shadow-md transition-all"
+              >
+                Login
+              </Link>
+              <Link
+                to="/register"
+                className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md shadow-md transition-all"
+              >
+                Register
+              </Link>
+            </div>
           )}
+
+          {/* Mobile Menu Button */}
+          <button
+            className="lg:hidden p-2 rounded-md hover:bg-gray-200 transition-all"
+            onClick={() => setMobileOpen(!mobileOpen)}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6 text-gray-700"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 6h16M4 12h16M4 18h16"
+              />
+            </svg>
+          </button>
         </div>
-      </div>
-    </Container>
+
+        {/* Mobile Menu */}
+        {mobileOpen && (
+          <ul className="absolute top-full left-0 right-0 bg-white shadow-lg rounded-b-lg flex flex-col lg:hidden z-10 animate-slideDown overflow-hidden">
+            {links.map((link, idx) => (
+              <li key={idx} className="border-b last:border-b-0">
+                <NavLink
+                  onClick={() => setMobileOpen(false)}
+                  className={({ isActive }) =>
+                    isActive
+                      ? "block px-4 py-3 text-green-600 font-semibold bg-green-50"
+                      : "block px-4 py-3 text-gray-700 hover:text-green-500 hover:bg-green-50 transition-all"
+                  }
+                  to={link.path}
+                >
+                  {link.name}
+                </NavLink>
+              </li>
+            ))}
+          </ul>
+        )}
+      </nav>
+      <div className="border-b-1 border-green-300"></div>
+    </div>
   );
 };
 

@@ -36,7 +36,7 @@ const AllReviewsCard = () => {
       <Navber />
 
       {/* Search Bar */}
-      <div className="bg-green-50 py-8">
+      <div className=" py-8">
         <div className="container mx-auto px-4">
           <form
             onSubmit={handleSearch}
